@@ -1,7 +1,5 @@
 pragma solidity ^0.4.24;
 
-import "./SafeMath.sol";
-
 interface receiptToken{ 
     function receiveApproval(address _from, uint256 _value, address _token, bytes32 _extraData) external;
 }
@@ -20,6 +18,24 @@ contract OwnerContract{
 }
 
 
+contract SafeMath {
+    function safeAdd(uint a, uint b) public pure returns (uint c) {
+        c = a + b;
+        require(c >= a);
+    }
+    function safeSub(uint a, uint b) public pure returns (uint c) {
+        require(b <= a);
+        c = a - b;
+    }
+    function safeMul(uint a, uint b) public pure returns (uint c) {
+        c = a * b;
+        require(a == 0 || c / a == b);
+    }
+    function safeDiv(uint a, uint b) public pure returns (uint c) {
+        require(b > 0);
+        c = a / b;
+    }
+}
 
 contract ERC20_Token is SafeMath,OwnerContract{
     string public name;
@@ -29,10 +45,12 @@ contract ERC20_Token is SafeMath,OwnerContract{
     
         
     event Burn(address indexed from, uint256 value);
+    event Froze(address target, bool frozen);
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed _owner, address _spender, uint256 value);
 
     mapping(address => uint256) public balanceOf;
+    mapping(address => bool) public frozenAccounts;
     mapping(address => mapping(address=>uint256)) public allowance;
     
     constructor(
@@ -49,6 +67,7 @@ contract ERC20_Token is SafeMath,OwnerContract{
       
     function _transfer(address _from, address _to, uint256 _value) internal{
         require(_to != 0x0);
+        require(!frozenAccounts[_from]);
         require(balanceOf[_from] >= _value);
         require(safeAdd(balanceOf[_to], _value) >= balanceOf[_to]);
         
@@ -96,6 +115,11 @@ contract ERC20_Token is SafeMath,OwnerContract{
         totalSupply += mintedToken;
     }
     
+    
+    function freezeAccount(address accountHolder) public{
+        frozenAccounts[accountHolder] = true;
+        emit Froze(accountHolder,true);
+    }
     
     
     function burn(uint256 _value) public onlyOwner returns(bool success){
