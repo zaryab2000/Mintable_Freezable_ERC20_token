@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+import "./SafeMath.sol";
+
 interface receiptToken{ 
     function receiveApproval(address _from, uint256 _value, address _token, bytes32 _extraData) external;
 }
@@ -18,24 +20,6 @@ contract OwnerContract{
 }
 
 
-contract SafeMath {
-    function safeAdd(uint a, uint b) public pure returns (uint c) {
-        c = a + b;
-        require(c >= a);
-    }
-    function safeSub(uint a, uint b) public pure returns (uint c) {
-        require(b <= a);
-        c = a - b;
-    }
-    function safeMul(uint a, uint b) public pure returns (uint c) {
-        c = a * b;
-        require(a == 0 || c / a == b);
-    }
-    function safeDiv(uint a, uint b) public pure returns (uint c) {
-        require(b > 0);
-        c = a / b;
-    }
-}
 
 contract ERC20_Token is SafeMath,OwnerContract{
     string public name;
